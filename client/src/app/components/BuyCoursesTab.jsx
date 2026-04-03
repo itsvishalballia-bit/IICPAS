@@ -104,6 +104,14 @@ const dummyCategories = [
   { _id: "5", category: "Excel" },
 ];
 
+const studentNewsBackgrounds = [
+  "/images/s2.jpg",
+  "/images/s3.jpg",
+  "/images/s5.jpeg",
+  "/images/s6.jpeg",
+  "/images/young-woman1.jpg",
+];
+
 const toNumber = (value, fallback = 0) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -202,6 +210,7 @@ export default function BuyCoursesTab() {
   const [newsItems, setNewsItems] = useState([]);
   const [newsLoading, setNewsLoading] = useState(true);
   const [achievementStats, setAchievementStats] = useState([]);
+  const [activeNewsBackground, setActiveNewsBackground] = useState(0);
   const [sortBy, setSortBy] = useState("relevance");
   const [showDiscountOnly, setShowDiscountOnly] = useState(false);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });
@@ -323,6 +332,14 @@ export default function BuyCoursesTab() {
 
     fetchAchievementStats();
   }, [API_BASE]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveNewsBackground((prev) => (prev + 1) % studentNewsBackgrounds.length);
+    }, 3000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   const effectiveCategories = useMemo(() => {
     if (categories.length > 0) {
@@ -728,37 +745,51 @@ export default function BuyCoursesTab() {
   return (
     <section className="bg-slate-50 text-slate-900">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <div className="mb-6 overflow-hidden rounded-2xl border border-sky-100 bg-gradient-to-r from-sky-50 via-white to-emerald-50 shadow-sm">
-          <div className="flex flex-col gap-3 px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:gap-4">
+        <div className="student-news-hero relative mb-6 overflow-hidden rounded-2xl border border-slate-700/40 shadow-xl">
+          <div className="pointer-events-none absolute inset-0">
+            {studentNewsBackgrounds.map((image, index) => (
+              <div
+                key={image}
+                className={`student-news-bg absolute inset-0 ${
+                  index === activeNewsBackground ? "is-active" : ""
+                }`}
+                style={{ backgroundImage: `url('${image}')` }}
+              />
+            ))}
+            <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(2,6,23,0.86)_0%,rgba(15,23,42,0.78)_46%,rgba(15,23,42,0.68)_100%)]" />
+            <div className="absolute inset-0 bg-slate-950/18 backdrop-blur-[1px]" />
+          </div>
+
+          <div className="relative flex flex-col gap-3 px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:gap-4">
             <div className="flex shrink-0 items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-600 text-white shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-500/90 text-white shadow-sm ring-1 ring-white/20">
                 <FaNewspaper className="text-sm" />
               </div>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-100">
                   Student Updates
                 </p>
-                <p className="text-sm font-medium text-slate-600">
+                <p className="text-sm font-medium text-slate-200/90">
                   Latest news, placements and course progress highlights
                 </p>
               </div>
             </div>
 
-            <div className="relative min-w-0 flex-1 overflow-hidden rounded-xl border border-sky-100 bg-white/80 px-3 py-3">
+            <div className="relative min-w-0 flex-1 overflow-hidden rounded-xl border border-white/10 bg-white/10 px-3 py-3 backdrop-blur-md">
               {newsLoading && achievementStats.length === 0 ? (
-                <div className="h-6 animate-pulse rounded-lg bg-slate-100" />
+                <div className="h-6 animate-pulse rounded-lg bg-white/20" />
               ) : (
                 <div className="student-updates-marquee flex min-w-max items-center gap-6 whitespace-nowrap">
                   {[...tickerItems, ...tickerItems].map((item, index) => (
                     <div
                       key={`${item.id}-${index}`}
-                      className="inline-flex items-center gap-3 text-sm text-slate-700"
+                      className="inline-flex items-center gap-3 text-sm text-slate-100"
                     >
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${
                           item.type === "achievement"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-sky-100 text-sky-700"
+                            ? "bg-emerald-400/20 text-emerald-100"
+                            : "bg-sky-400/20 text-sky-100"
                         }`}
                       >
                         {item.type === "achievement" ? "Stats" : "News"}
@@ -774,7 +805,7 @@ export default function BuyCoursesTab() {
             <button
               type="button"
               onClick={() => router.push("/student-dashboard?tab=news")}
-              className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 lg:self-auto"
+              className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-100 lg:self-auto"
             >
               View all news
               <FaArrowRight className="text-xs" />
@@ -1001,6 +1032,24 @@ export default function BuyCoursesTab() {
       )}
 
       <style jsx>{`
+        .student-news-hero {
+          background: #0f172a;
+        }
+
+        .student-news-bg {
+          background-position: center;
+          background-repeat: no-repeat;
+          background-size: cover;
+          opacity: 0;
+          transform: scale(1.04);
+          transition: opacity 900ms ease, transform 3000ms ease;
+        }
+
+        .student-news-bg.is-active {
+          opacity: 1;
+          transform: scale(1);
+        }
+
         .student-updates-marquee {
           animation: studentUpdatesMarquee 28s linear infinite;
         }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AlertsTab from "./AlertsTab";
@@ -9,7 +10,6 @@ import TestimonialAdmin from "./Course/TestimonialAdmin";
 import NewsTab from "./NewsTab";
 import StaffManagementTab from "./StaffManagementTab";
 import EnquiriesTab from "./LeadsTab";
-import Drawer from "react-modern-drawer";
 import ManageMetaTags from "./Course/ManageMetaTags";
 import BlogComponent from "./BlogComponent";
 import CollegeTab from "./CollegeTab";
@@ -119,6 +119,8 @@ import LoginAccessControlTab from "./LoginAccessControlTab";
 import JobSidebarMarqueeTab from "./JobSidebarMarqueeTab";
 import LiveBookingsTab from "./LiveBookingsTab";
 import OurPartnersTab from "./OurPartnersTab";
+
+const Drawer = dynamic(() => import("react-modern-drawer"), { ssr: false });
 
 // All available modules with their permissions (unused - replaced by NAVIGATION_GROUPS)
 /*
@@ -430,6 +432,7 @@ const NAVIGATION_GROUPS = [
 
 function AdminDashboardContent() {
   const { user, canAccess, logout, isPrivilegedAdmin } = useAuth();
+  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -447,6 +450,10 @@ function AdminDashboardContent() {
     }
   );
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Set default active tab to first accessible module only if no tab is selected
   useEffect(() => {
@@ -488,6 +495,38 @@ function AdminDashboardContent() {
     }));
   };
 
+  const activeNavigationItem = NAVIGATION_GROUPS.flatMap((group) => group.items).find(
+    (item) => item.id === activeTab
+  );
+  const activeGroup = NAVIGATION_GROUPS.find((group) =>
+    group.items.some((item) => item.id === activeTab)
+  );
+  const activeTitle =
+    activeNavigationItem?.label ||
+    (activeTab.startsWith("edit-privacy-policy")
+      ? "Edit Privacy Policy"
+      : activeTab.startsWith("edit-refund-policy")
+      ? "Edit Refund Policy"
+      : activeTab.startsWith("edit-terms-of-service")
+      ? "Edit Terms of Service"
+      : activeTab.startsWith("edit-terms-and-conditions")
+      ? "Edit Terms & Conditions"
+      : activeTab.startsWith("edit-cookie-policy")
+      ? "Edit Cookie Policy"
+      : activeTab.startsWith("edit-confidentiality-policy")
+      ? "Edit Confidentiality Policy"
+      : activeTab.startsWith("edit-disclaimer-policy")
+      ? "Edit Disclaimer Policy"
+      : activeTab.startsWith("edit-iicpa-review")
+      ? "Edit IICPA Review"
+      : activeTab === ""
+      ? "Admin Dashboard"
+      : "Module");
+  const activeSubtitle =
+    activeTab === ""
+      ? "Manage content, operations, and website settings from one premium control center."
+      : `${activeGroup?.label || "Dashboard"} workspace aligned with the public website visual language.`;
+
   // SIDEBAR: scrollable, hidden scrollbar
   const renderSidebar = (isMobile = false) => (
     <div className="h-full flex flex-col">
@@ -496,13 +535,13 @@ function AdminDashboardContent() {
         {!isMobile && (
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="absolute top-4 right-2 p-2 rounded-lg bg-white shadow-md hover:bg-gray-50 transition-colors z-10"
+            className="absolute top-4 right-2 flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white/90 text-slate-600 shadow-sm transition hover:bg-white hover:text-slate-900 z-10"
             title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {sidebarCollapsed ? (
-              <FaChevronRight className="text-gray-600 text-sm" />
+              <FaChevronRight className="text-sm" />
             ) : (
-              <FaChevronLeft className="text-gray-600 text-sm" />
+              <FaChevronLeft className="text-sm" />
             )}
           </button>
         )}
@@ -512,7 +551,7 @@ function AdminDashboardContent() {
             sidebarCollapsed && !isMobile ? "px-2" : ""
           }`}
         >
-          <div className="bg-white p-3 rounded-lg shadow-lg">
+          <div className="rounded-[28px] border border-white/60 bg-white/95 p-4 shadow-[0_18px_40px_-24px_rgba(15,23,42,0.55)] backdrop-blur">
             <img
               src="/images/logo.png"
               alt="IICPA Institute"
@@ -526,14 +565,14 @@ function AdminDashboardContent() {
         {/* User Info */}
         {(!sidebarCollapsed || isMobile) && (
           <div
-            className="text-center mb-4 p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+            className="mb-4 cursor-pointer rounded-[26px] border border-white/60 bg-white/80 p-4 text-center shadow-sm backdrop-blur transition hover:bg-white"
             onClick={() => {
               setActiveTab("profile");
               if (isMobile) setDrawerOpen(false);
             }}
           >
             <div className="flex items-center justify-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center">
+              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,#2563eb_0%,#0f9f6e_100%)]">
                 {user?.image ? (
                   <img
                     src={`${
@@ -558,14 +597,14 @@ function AdminDashboardContent() {
                 </div>
               </div>
               <div className="text-left">
-                <p className="font-semibold text-blue-800">{user?.name}</p>
-                <p className="text-sm text-blue-600">{user?.role}</p>
+                <p className="font-semibold text-slate-900">{user?.name}</p>
+                <p className="text-sm text-slate-500">{user?.role}</p>
               </div>
             </div>
           </div>
         )}
       </div>
-      <nav className="flex-1 overflow-y-auto px-3 custom-scrollbar">
+      <nav className="flex-1 overflow-y-auto px-3 pb-5 custom-scrollbar">
         {/* Grouped Navigation */}
         {NAVIGATION_GROUPS.map((group) => {
           // Filter group items based on user permissions
@@ -598,10 +637,10 @@ function AdminDashboardContent() {
                   sidebarCollapsed && !isMobile
                     ? "justify-center px-2"
                     : "justify-between gap-3 px-4"
-                } py-3 rounded-lg w-full text-left transition-all duration-200 ${
+                } py-3.5 rounded-[22px] w-full text-left transition-all duration-200 ${
                   hasActiveItem
-                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md"
-                    : "hover:bg-blue-50 text-gray-700 hover:text-blue-700"
+                    ? "bg-[linear-gradient(135deg,#2563eb_0%,#1d4ed8_55%,#0f9f6e_100%)] text-white font-semibold shadow-[0_14px_30px_-18px_rgba(37,99,235,0.9)]"
+                    : "text-slate-700 hover:bg-white/75 hover:text-slate-900"
                 }`}
                 title={sidebarCollapsed && !isMobile ? group.label : ""}
               >
@@ -612,7 +651,7 @@ function AdminDashboardContent() {
                 >
                   <span
                     className={`text-lg ${
-                      hasActiveItem ? "text-white" : "text-blue-500"
+                      hasActiveItem ? "text-white" : "text-blue-600"
                     }`}
                   >
                     {group.icon}
@@ -624,7 +663,7 @@ function AdminDashboardContent() {
                 {(!sidebarCollapsed || isMobile) && (
                   <span
                     className={`text-sm transition-transform duration-200 ${
-                      hasActiveItem ? "text-white" : "text-blue-500"
+                      hasActiveItem ? "text-white" : "text-slate-500"
                     }`}
                   >
                     {isGroupExpanded ? <FaChevronDown /> : <FaChevronRight />}
@@ -634,7 +673,7 @@ function AdminDashboardContent() {
 
               {/* Group Items */}
               {(!sidebarCollapsed || isMobile) && isGroupExpanded && (
-                <div className="ml-6 mt-2 space-y-1">
+                <div className="ml-5 mt-2 space-y-1.5 border-l border-white/50 pl-3">
                   {accessibleGroupItems.map((item) => (
                     <button
                       key={item.id}
@@ -642,15 +681,15 @@ function AdminDashboardContent() {
                         setActiveTab(item.id);
                         if (isMobile) setDrawerOpen(false);
                       }}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg w-full text-left transition-all duration-200 ${
+                      className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl w-full text-left transition-all duration-200 ${
                         activeTab === item.id
-                          ? "bg-gradient-to-r from-blue-400 to-blue-500 text-white font-semibold shadow-md"
-                          : "hover:bg-blue-50 text-gray-600 hover:text-blue-600"
+                          ? "bg-white text-slate-900 font-semibold shadow-sm"
+                          : "text-slate-600 hover:bg-white/70 hover:text-slate-900"
                       }`}
                     >
                       <span
                         className={`text-sm ${
-                          activeTab === item.id ? "text-white" : "text-blue-400"
+                          activeTab === item.id ? "text-blue-600" : "text-slate-400"
                         }`}
                       >
                         {item.icon}
@@ -668,29 +707,32 @@ function AdminDashboardContent() {
   );
 
   return (
-    <div className="bg-gray-50 admin-dashboard" data-admin-dashboard>
+    <div
+      className="admin-dashboard min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.14),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(15,159,110,0.12),_transparent_24%),linear-gradient(180deg,#f7fbff_0%,#edf5ff_48%,#f6fbff_100%)]"
+      data-admin-dashboard
+    >
       {/* Sidebar - Desktop: fixed position, scrollable, hidden scrollbar */}
       <aside
         className={`hidden lg:block ${
           sidebarCollapsed ? "w-20" : "w-70"
-        } h-screen fixed left-0 top-0 bg-gradient-to-b from-blue-100 to-blue-200 border-r border-blue-300 rounded-r-2xl shadow-xl overflow-y-auto custom-scrollbar z-50 transition-all duration-300`}
+        } fixed left-0 top-0 h-screen overflow-y-auto border-r border-white/50 bg-[linear-gradient(180deg,rgba(191,219,254,0.92)_0%,rgba(219,234,254,0.86)_35%,rgba(224,242,254,0.92)_100%)] shadow-[0_24px_70px_-45px_rgba(15,23,42,0.45)] backdrop-blur-xl custom-scrollbar z-50 transition-all duration-300`}
       >
         {renderSidebar()}
       </aside>
 
       {/* Topbar - Right: Bell & Logout */}
-      <div className="fixed top-4 right-4 z-50 flex gap-4 items-center">
+      <div className="fixed right-4 top-4 z-50 flex items-center gap-3 sm:right-6">
         <div className="relative">
-          <div className="bg-white p-2 rounded-full shadow-md">
-            <FaBell className="text-xl text-gray-700" />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/90 text-slate-700 shadow-sm backdrop-blur">
+            <FaBell className="text-lg" />
+            <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 py-0.5 text-xs font-bold text-white">
               3
             </span>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 text-sm flex items-center gap-2 font-medium shadow-md transition-all duration-200"
+          className="inline-flex items-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#ef4444_0%,#dc2626_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_35px_-22px_rgba(220,38,38,0.9)] transition hover:brightness-105"
         >
           <FaSignOutAlt />
           Logout
@@ -701,42 +743,44 @@ function AdminDashboardContent() {
       <div className="fixed top-4 left-4 lg:hidden z-50">
         <button
           onClick={() => setDrawerOpen(true)}
-          className="bg-white p-3 shadow-lg rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/90 shadow-sm backdrop-blur transition hover:bg-white"
           title="Open menu"
         >
-          <FaBars className="text-gray-700" />
+          <FaBars className="text-slate-700" />
         </button>
       </div>
 
       {/* Drawer - Mobile Sidebar: scrollable, hidden scrollbar */}
-      <Drawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        direction="left"
-        className="bg-gradient-to-b from-blue-100 to-blue-200 w-64 h-full custom-scrollbar"
-      >
-        <div className="h-full">{renderSidebar(true)}</div>
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 mt-4 mx-3 mb-3 rounded-lg transition-colors"
+      {mounted && (
+        <Drawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          direction="left"
+          className="h-full w-64 bg-[linear-gradient(180deg,rgba(191,219,254,0.96)_0%,rgba(224,242,254,0.96)_100%)] custom-scrollbar"
         >
-          <FaSignOutAlt />
-          Logout
-        </button>
-      </Drawer>
+          <div className="h-full">{renderSidebar(true)}</div>
+          <button
+            onClick={handleLogout}
+            className="mx-3 mb-3 mt-4 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-red-600 transition-colors hover:bg-red-50"
+          >
+            <FaSignOutAlt />
+            Logout
+          </button>
+        </Drawer>
+      )}
 
       {/* Main Content: scrolls independently of sidebar */}
       <main
-        className={`min-h-screen p-6 pt-8 overflow-y-auto relative transition-all duration-300 ${
+        className={`relative min-h-screen overflow-y-auto px-4 pb-8 pt-24 transition-all duration-300 sm:px-6 lg:px-8 ${
           sidebarCollapsed ? "lg:ml-20" : "lg:ml-70"
         }`}
       >
         {/* Back Button - Only show when not on dashboard home */}
         {activeTab !== "" && (
-          <div className="mb-6">
+          <div className="mb-5">
             <button
               onClick={handleBack}
-              className="bg-white text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm flex items-center gap-2 font-medium shadow-md transition-all duration-200 border border-gray-200"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm backdrop-blur transition hover:bg-white"
             >
               <FaArrowLeft className="text-sm" />
               Back
@@ -744,7 +788,48 @@ function AdminDashboardContent() {
           </div>
         )}
 
+        <section className="mb-6 overflow-hidden rounded-[32px] border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.92)_0%,rgba(248,250,252,0.88)_45%,rgba(239,246,255,0.92)_100%)] p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.35)] backdrop-blur sm:p-7">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
+                <span>IICPA Admin</span>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-[-0.03em] text-slate-900 sm:text-4xl">
+                {activeTitle}
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+                {activeSubtitle}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/80 px-4 py-3">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-emerald-700/80">
+                  Status
+                </p>
+                <p className="mt-2 text-lg font-semibold text-emerald-700">Live</p>
+              </div>
+              <div className="rounded-2xl border border-blue-100 bg-blue-50/80 px-4 py-3">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-blue-700/80">
+                  Workspace
+                </p>
+                <p className="mt-2 text-lg font-semibold text-blue-700">
+                  {activeGroup?.label || "Overview"}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+                  Admin
+                </p>
+                <p className="mt-2 truncate text-lg font-semibold text-slate-900">
+                  {user?.name || "Admin"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Permission-based content rendering */}
+        <section className="rounded-[32px] border border-white/70 bg-white/88 p-4 shadow-[0_22px_70px_-45px_rgba(15,23,42,0.3)] backdrop-blur sm:p-5 lg:p-6">
         {activeTab === "live-session" ? (
           <LiveSessionAdmin />
         ) : activeTab === "live-bookings" ? (
@@ -984,6 +1069,7 @@ function AdminDashboardContent() {
             </p>
           </div>
         )}
+        </section>
       </main>
     </div>
   );

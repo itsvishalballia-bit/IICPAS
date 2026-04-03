@@ -1288,3 +1288,61 @@ body::-webkit-scrollbar-thumb:hover {
     min-height: 160px;
   }
 }
+
+/* Admin dashboard shared polish */
+[data-admin-dashboard] .MuiPaper-root,
+[data-admin-dashboard] .MuiCard-root,
+[data-admin-dashboard] .MuiDialog-paper,
+[data-admin-dashboard] .MuiPopover-paper,
+[data-admin-dashboard] .MuiMenu-paper {
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 24px 70px -45px rgba(15, 23, 42, 0.28) !important;
+  backdrop-filter: blur(14px);
+}
+
+[data-admin-dashboard] .MuiButton-contained {
+  border-radius: 16px !important;
+  box-shadow: 0 18px 30px -24px rgba(37, 99, 235, 0.75) !important;
+}
+
+[data-admin-dashboard] .MuiButton-outlined,
+[data-admin-dashboard] .MuiButton-text {
+  border-radius: 16px !important;
+}
+
+[data-admin-dashboard] .MuiTextField-root .MuiOutlinedInput-root,
+[data-admin-dashboard] .MuiFormControl-root .MuiOutlinedInput-root,
+[data-admin-dashboard] input:not([type="checkbox"]):not([type="radio"]),
+[data-admin-dashboard] select,
+[data-admin-dashboard] textarea {
+  border-radius: 16px !important;
+}
+
+[data-admin-dashboard] table {
+  overflow: hidden;
+}
+
+[data-admin-dashboard] table thead th {
+  font-weight: 700;
+}
+
+[data-admin-dashboard] table tbody tr {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+[data-admin-dashboard] table tbody tr:hover {
+  background-color: rgba(239, 246, 255, 0.7);
+}
+
+[data-admin-dashboard] .bg-white.rounded-lg,
+[data-admin-dashboard] .bg-white.rounded-xl,
+[data-admin-dashboard] .bg-white.rounded-2xl,
+[data-admin-dashboard] .bg-white.shadow,
+[data-admin-dashboard] .bg-white.shadow-sm,
+[data-admin-dashboard] .bg-white.shadow-md,
+[data-admin-dashboard] .bg-white.shadow-lg,
+[data-admin-dashboard] .bg-white.shadow-xl {
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 24px 70px -48px rgba(15, 23, 42, 0.25);
+}
